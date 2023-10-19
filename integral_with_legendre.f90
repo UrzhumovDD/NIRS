@@ -24,7 +24,7 @@ end if
 return
 end function Lezh
 !calculating nods and their weights
-subroutine nodes_weights(n,a,b,nods,weights) 
+subroutine nodes_weights(n,a,b,nodes,weights) 
 integer, intent(in), optional     :: n
 real(dp), intent(in), optional        :: a,b
 real(dp)                          :: eps = 1e-8_dp
@@ -34,7 +34,7 @@ real(dp),allocatable,intent(out)  :: nodes(:) , weights(:)
 real(dp),allocatable              :: nodes1(:)
 !first approximation
 allocate( nodes(n) )
-nods = [( -cos( PI*(4*i - 1)/(4*n + 2) ), i = 1 , n )]
+nodes = [( -cos( PI*(4*i - 1)/(4*n + 2) ), i = 1 , n )]
 allocate( nodes1(n) )
 nodes1 = 10
 ! cycle with Newton method for nods
@@ -58,7 +58,7 @@ use, intrinsic        :: iso_fortran_env, only: dp=>real64
 implicit none 
 contains 
     
-subroutine F(nods,Func)
+subroutine F(nodes,Func)
 real(dp),intent(in),allocatable    :: nodes(:)
 integer                :: i
 real(dp),allocatable,intent(out) :: Func(:)
@@ -98,7 +98,7 @@ write(*,*) 'left border'
 read(*,*) a
 write(*,*) 'right border'
 read(*,*) b
-call nods_weights(n,a,b,nodes,weights)
+call nodes_weights(n,a,b,nodes,weights)
 call F(nodes,Func)
 print *, nodes
 print *, weights
