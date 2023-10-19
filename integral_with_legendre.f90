@@ -26,7 +26,7 @@ end function Lezh
 subroutine nodes_weights(n,a,b,nodes,weights) 
 integer, intent(in), optional     :: n
 real(dp), intent(in), optional        :: a,b
-real(dp)                          :: eps = 1e-10
+real(dp)                          :: eps = 1e-12
 integer                           :: i 
 real(dp), parameter                   :: PI = ACOS(-1.D0)
 real(dp),allocatable,intent(out)  :: nodes(:) , weights(:)
@@ -97,6 +97,8 @@ print *, weights
 print *, Func
 print *, analytically(a,b)
 print *, numerically(Func,weights,a,b)
+print *, 'absolute difference'
 print *, analytically(a,b) - numerically(Func,weights,a,b)
+print *, 'relative difference'
 print *, (analytically(a,b) - numerically(Func,weights,a,b))/analytically(a,b)
 end program test
