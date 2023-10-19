@@ -9,47 +9,45 @@ integer , intent(in)     :: n
 real(dp)                 :: a, b
 integer                  :: i
 if( n == 0 ) then
-c = 1.0
+c = 1.0_dp
 else if( n == 1 ) then
 c = x
 else
-a = 1.0
+a = 1.0_dp
 b = x
 do i = 2, n
-c = b*x*( 2*i - 1 )/i - a*( i - 1 )/i
+c = b*x*( 2.0_dp*i - 1.0_dp )/i - a*( i - 1.0_dp )/i
 a = b
 b = c
 end do
 end if
-return
 end function Lezh
 !calculating nods and their weights
 subroutine nodes_weights(n,a,b,nodes,weights) 
 integer, intent(in), optional     :: n
 real(dp), intent(in), optional        :: a,b
-real(dp)                          :: eps = 1e-8_dp
+real(dp)                          :: eps = 1e-10
 integer                           :: i 
-real, parameter                   :: PI = DACOS(-1.D0)
+real(dp), parameter                   :: PI = ACOS(-1.D0)
 real(dp),allocatable,intent(out)  :: nodes(:) , weights(:)
 real(dp),allocatable              :: nodes1(:)
 !first approximation
-allocate( nodes(n) )
-nodes = [( -cos( PI*(4*i - 1)/(4*n + 2) ), i = 1 , n )]
+nodes = [( -cos( PI*(4.0_dp*i - 1.0_dp)/(4.0_dp*n + 2.0_dp) ), i = 1 , n )]
 allocate( nodes1(n) )
 nodes1 = 10
 ! cycle with Newton method for nods
 do while (abs(maxval(nodes - nodes1)) >= eps)   
 nodes1 = nodes
 do i = 1 , n
-nodes(i) = nodes1(i) - lezh(n,nodes1(i)) * (1 - nodes1(i)**2) / &
+nodes(i) = nodes1(i) - lezh(n,nodes1(i)) * (1.0_dp - nodes1(i)**2.0_dp) / &
     ( ( lezh(n - 1,nodes1(i)) - nodes1(i) * lezh(n,nodes1(i)) )* n )
 end do 
 end do
 !weights
-allocate( weights(n),source = [(2/(1-nodes(i)**2)/ &
-    ( ( (lezh(n - 1,nodes(i))-nodes(i) * lezh(n,nodes(i)) )* n / (1-nodes(i)**2))**2),i = 1, n)] )
+allocate( weights(n),source = [(2_dp/(1_dp-nodes(i)**2_dp)/ &
+    ( ( (lezh(n - 1,nodes(i))-nodes(i) * lezh(n,nodes(i)) )* n / (1_dp-nodes(i)**2))**2),i = 1, n)] )
 !affine transformations 
-nodes = (nodes * (b-a) + a + b)/2
+nodes = (nodes * (b-a) + a + b) * 0.5_dp
 end subroutine nodes_weights  
 end module legendre
   
@@ -62,25 +60,19 @@ subroutine F(nodes,Func)
 real(dp),intent(in),allocatable    :: nodes(:)
 integer                :: i
 real(dp),allocatable,intent(out) :: Func(:)
-allocate(Func(size(nodes)))
-do i =1,size(nodes)
-Func(i) = TANH(nodes(i))    
-end do
+Func = tanh(nodes)
 end subroutine F
 
-real function analytically(a,b)
+real(dp) function analytically(a,b)
 real(dp),intent(in) :: a, b
 analytically = Log(cosh(b))- Log(cosh(a))
 end function analytically
 
-real function numerically(Func,weights,a,b)
+real(dp) function numerically(Func,weights,a,b)
 real(dp),allocatable,intent(in)  :: Func(:) , weights(:)
 real(dp),intent(in)  :: a, b
 integer :: i
-numerically = 0
-do i = 1 ,size(weights)
-numerically = numerically + weights(i)*Func(i)*(b - a)/2
-end do
+numerically = sum(weights * func) * (b - a) * 0.5_dp
 end function numerically 
 end module integral    
     
@@ -105,4 +97,6 @@ print *, weights
 print *, Func
 print *, analytically(a,b)
 print *, numerically(Func,weights,a,b)
+print *, analytically(a,b) - numerically(Func,weights,a,b)
+print *, (analytically(a,b) - numerically(Func,weights,a,b))/analytically(a,b)
 end program test
