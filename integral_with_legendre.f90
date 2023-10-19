@@ -24,8 +24,8 @@ end if
 end function Lezh
 !calculating nods and their weights
 subroutine nodes_weights(n,a,b,nodes,weights) 
-integer, intent(in), optional     :: n
-real(dp), intent(in), optional        :: a,b
+integer, intent(in)    :: n
+real(dp), intent(in)        :: a,b
 real(dp)                          :: eps = 1e-12
 integer                           :: i 
 real(dp), parameter                   :: PI = ACOS(-1.D0)
