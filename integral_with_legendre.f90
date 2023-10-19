@@ -24,33 +24,33 @@ end if
 return
 end function Lezh
 !calculating nods and their weights
-subroutine nods_weights(n,a,b,nods,weights) 
+subroutine nodes_weights(n,a,b,nods,weights) 
 integer, intent(in), optional     :: n
 real(dp), intent(in), optional        :: a,b
 real(dp)                          :: eps = 1e-8_dp
 integer                           :: i 
 real, parameter                   :: PI = DACOS(-1.D0)
-real(dp),allocatable,intent(out)  :: nods(:) , weights(:)
-real(dp),allocatable              :: nods1(:)
+real(dp),allocatable,intent(out)  :: nodes(:) , weights(:)
+real(dp),allocatable              :: nodes1(:)
 !first approximation
-allocate( nods(n) )
+allocate( nodes(n) )
 nods = [( -cos( PI*(4*i - 1)/(4*n + 2) ), i = 1 , n )]
-allocate( nods1(n) )
-nods1 = 10
+allocate( nodes1(n) )
+nodes1 = 10
 ! cycle with Newton method for nods
-do while (abs(maxval(nods - nods1)) >= eps)   
-nods1 = nods
+do while (abs(maxval(nodes - nodes1)) >= eps)   
+nodes1 = nodes
 do i = 1 , n
-nods(i) = nods1(i) - lezh(n,nods1(i)) * (1 - nods1(i)**2) / &
-    ( ( lezh(n - 1,nods1(i)) - nods1(i) * lezh(n,nods1(i)) )* n )
+nodes(i) = nodes1(i) - lezh(n,nodes1(i)) * (1 - nodes1(i)**2) / &
+    ( ( lezh(n - 1,nodes1(i)) - nodes1(i) * lezh(n,nodes1(i)) )* n )
 end do 
 end do
 !weights
-allocate( weights(n),source = [(2/(1-nods(i)**2)/ &
-    ( ( (lezh(n - 1,nods(i))-nods(i) * lezh(n,nods(i)) )* n / (1-nods(i)**2))**2),i = 1, n)] )
+allocate( weights(n),source = [(2/(1-nodes(i)**2)/ &
+    ( ( (lezh(n - 1,nodes(i))-nodes(i) * lezh(n,nodes(i)) )* n / (1-nodes(i)**2))**2),i = 1, n)] )
 !affine transformations 
-nods = (nods * (b-a) + a + b)/2
-end subroutine nods_weights  
+nodes = (nodes * (b-a) + a + b)/2
+end subroutine nodes_weights  
 end module legendre
   
 module integral  
@@ -59,12 +59,12 @@ implicit none
 contains 
     
 subroutine F(nods,Func)
-real(dp),intent(in),allocatable    :: nods(:)
+real(dp),intent(in),allocatable    :: nodes(:)
 integer                :: i
 real(dp),allocatable,intent(out) :: Func(:)
-allocate(Func(size(nods)))
-do i =1,size(nods)
-Func(i) = TANH(nods(i))    
+allocate(Func(size(nodes)))
+do i =1,size(nodes)
+Func(i) = TANH(nodes(i))    
 end do
 end subroutine F
 
@@ -85,11 +85,11 @@ end function numerically
 end module integral    
     
 program test
-use legendre, only : nods_weights
+use legendre, only : nodes_weights
 use integral, only : F, analytically , numerically
 use, intrinsic        :: iso_fortran_env, only: dp=>real64
 implicit none 
-real(dp), allocatable :: nods(:),weights(:),Func(:)
+real(dp), allocatable :: nodes(:),weights(:),Func(:)
 integer               :: n
 real(dp)              :: a, b
 write(*,*) 'order'
@@ -98,9 +98,9 @@ write(*,*) 'left border'
 read(*,*) a
 write(*,*) 'right border'
 read(*,*) b
-call nods_weights(n,a,b,nods,weights)
-call F(nods,Func)
-print *, nods
+call nods_weights(n,a,b,nodes,weights)
+call F(nodes,Func)
+print *, nodes
 print *, weights
 print *, Func
 print *, analytically(a,b)
