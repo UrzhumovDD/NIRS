@@ -36,7 +36,9 @@ end if
 
 end function Lezh
 
+
 !calculating nods and their weights
+
 
 subroutine nodes_weights( n, a, b, nodes, weights )
 integer,  intent(in   )              :: n
@@ -73,6 +75,8 @@ allocate( weights( n ),source = [ ( 2_dp / ( 1_dp-nodes( i ) ** 2_dp ) / &
 
 nodes = ( nodes * ( b - a ) + a + b) * 0.5_dp
 end subroutine nodes_weights
+
+
 end module legendre
 
 
@@ -81,14 +85,15 @@ use, intrinsic :: iso_fortran_env, only: dp=>real64
 implicit none
 contains
 
+
 subroutine F( nodes, Func )
 real(dp),intent(in   ),allocatable :: nodes(:)
 real(dp),intent(  out),allocatable :: Func(:)
-integer                            :: i
 
-Func = tanh(nodes)
+Func = tanh( nodes )
 
 end subroutine F
+
 
 real(dp) function analytically( a, b )
 real(dp),intent(in   ) :: a, b
@@ -97,19 +102,76 @@ analytically = Log( cosh( b ) )- Log( cosh( a ) )
 
 end function analytically
 
+
 real(dp) function numerically( Func, weights, a, b )
 real(dp),intent(in   ),allocatable  :: Func(:) , weights(:)
 real(dp),intent(in   )              :: a, b
-integer                             :: i
 
-numerically = sum( weights * func ) * ( b - a ) * 0.5_dp
+numerically = sum( weights * Func ) * ( b - a ) * 0.5_dp
 
 end function numerically 
-end module integral    
-    
+
+
+subroutine poly( nodes, Func )
+real(dp),intent(in   ),allocatable :: nodes(:)
+real(dp),intent(  out),allocatable :: Func(:)
+
+Func = nodes ** 3 / 4_dp + 3_dp * nodes ** 2 / 4_dp - 3_dp * nodes / 2_dp - 2_dp
+
+end subroutine poly
+
+
+real(dp) function an_poly( a, b )
+real(dp),intent(in   ) :: a, b
+
+an_poly = ( b ** 4 - a ** 4 ) / 16_dp + ( b ** 3 - a ** 3 ) / 4_dp - 3_dp * ( b ** 2 - a ** 2 ) / 4_dp &
+    - 2_dp * ( b - a)  
+
+end function an_poly
+
+
+real(dp) function num_poly( Func, weights, a, b )
+real(dp),intent(in   ),allocatable  :: Func(:) , weights(:)
+real(dp),intent(in   )              :: a, b
+
+num_poly = sum( weights * Func ) * ( b - a ) * 0.5_dp
+
+end function num_poly
+
+
+subroutine Fhard( nodes, Func )
+real(dp),intent(in   ),allocatable :: nodes(:)
+real(dp),intent(  out),allocatable :: Func(:)
+
+Func = nodes * atan( nodes ) + nodes * cos( nodes )
+
+end subroutine Fhard
+
+
+real(dp) function an_hard( a, b )
+real(dp),intent(in   ) :: a, b
+
+an_hard = b * sin( b ) - a * sin( a ) + cos( b ) - cos( a ) &
+    + ( ( b ** 2 + 1_dp) * atan( b ) - b ) / 2_dp &
+    - ( ( a ** 2 + 1_dp) * atan( a ) - a ) / 2_dp
+
+end function an_hard
+
+
+real(dp) function num_hard( Func, weights, a, b )
+real(dp),intent(in   ),allocatable  :: Func(:) , weights(:)
+real(dp),intent(in   )              :: a, b
+
+num_hard = sum( weights * Func ) * ( b - a ) * 0.5_dp
+
+end function num_hard
+
+end module integral
+
+
 program test
 use legendre, only : nodes_weights
-use integral, only : F, analytically, numerically
+use integral, only : F, analytically, numerically, poly, num_poly, an_poly , num_hard, an_hard, Fhard
 use, intrinsic        :: iso_fortran_env, only: dp=>real64
 implicit none 
 real(dp), allocatable :: nodes(:),weights(:),Func(:)
@@ -123,15 +185,43 @@ read(*,*) a
 write(*,*) 'right border'
 read(*,*) b
 call nodes_weights (n, a, b, nodes, weights )
+
+call Fhard( nodes, Func )
+!print *, nodes
+!print *, weights
+print *, 'x*arctan(x) + x*cos(x)'
+print *, 'analytically'
+print *, an_hard( a, b )
+print *, 'numerically'
+print *, num_hard( Func, weights, a, b )
+print *, 'absolute difference'
+print *, an_hard( a, b ) - num_hard (Func, weights, a, b )
+print *, 'relative difference'
+print *, ( an_hard( a, b ) - num_hard( Func, weights, a, b ) ) / an_hard( a, b )
+deallocate(Func)
+
+print *, 'x^3 / 4 + 3 * x^2 / 4 - 3 * x / 2 - 2'
+call poly( nodes, Func )
+print *, 'analytically'
+print *, an_poly( a, b )
+print *, 'numerically'
+print *, num_poly( Func, weights, a, b )
+print *, 'absolute difference'
+print *, an_poly( a, b ) - num_poly (Func, weights, a, b )
+print *, 'relative difference'
+print *, ( an_poly( a, b ) - num_poly( Func, weights, a, b ) ) / an_poly( a, b )
+deallocate(Func)
+
+print *, 'tanh(x)'
 call F( nodes, Func )
-print *, nodes
-print *, weights
-print *, Func
+print *, 'analytically'
 print *, analytically( a, b )
+print *, 'numerically'
 print *, numerically( Func, weights, a, b )
 print *, 'absolute difference'
 print *, analytically( a, b ) - numerically (Func, weights, a, b )
 print *, 'relative difference'
 print *, ( analytically( a, b ) - numerically( Func, weights, a, b ) ) / analytically( a, b )
+deallocate(Func)
 
 end program test
