@@ -40,9 +40,9 @@ end function Legen
 !calculating nods and their weights
 
 
-subroutine nodes_weights( n, nodes, weights)
+subroutine nodes_sbr( n, nodes)
 integer,  intent(in   )              :: n
-real(dp), intent(  out), allocatable :: nodes(:), weights(:)
+real(dp), intent(  out), allocatable :: nodes(:)
 real(dp), allocatable                :: nodes1(:)
 real(dp)                             :: eps = 1e-12
 integer                              :: i 
@@ -64,14 +64,24 @@ nodes( i ) = nodes1( i ) - Legen( n,nodes1( i ) ) * ( 1.0_dp - nodes1( i ) ** 2.
 end do 
 end do
 
-!weights
+
+
+
+
+end subroutine nodes_sbr
+
+
+subroutine weights_sbr( n, nodes, weights )
+integer,  intent(in   )              :: n
+real(dp), intent(inout), allocatable :: weights(:), nodes(:)
+integer                              :: i 
 
 allocate( weights( n ),source = [ ( 2_dp / ( 1_dp-nodes( i ) ** 2_dp ) / &
     ( ( ( Legen( n - 1, nodes( i ) ) - nodes( i ) * Legen( n, nodes( i ) ) ) * n / &
     ( 1_dp - nodes( i ) ** 2 ) ) **2 ), i = 1, n ) ] )
 
+end subroutine weights_sbr
 
-end subroutine nodes_weights
 
 subroutine Poly_in_cord(Func,cord)
 real(dp),allocatable, intent(inout) :: Func(:,:)
@@ -89,6 +99,7 @@ end do
 end do
 end subroutine Poly_in_cord
 
+
 real(dp) function Integral( Func, weights)
 real(dp),intent(in   ),allocatable  :: weights(:)
 real(dp),intent(in   )              :: Func(:)
@@ -96,6 +107,7 @@ real(dp),intent(in   )              :: Func(:)
 Integral = sum( weights * Func )
 
 end function Integral
+
 
 subroutine Ssource(Flux,Cross_sec_scat,order,energy,res) 
 real(dp), allocatable, intent(in   ) :: Flux(:,:,:), Cross_sec_scat(:,:,:,:)
@@ -111,7 +123,8 @@ res = 0
 
 allocate( Poly( order + 1 , SIZE(Flux,2) ) )
 
-call nodes_weights (SIZE(Flux,2), nodes, weights)
+call nodes_sbr(SIZE(Flux,2), nodes)
+call weights_sbr(SIZE(Flux,2), nodes, weights)
 
 call Poly_in_cord( Poly, nodes )
 
@@ -134,8 +147,6 @@ end do
 
 end do
 
-
-
 deallocate(Poly)
 deallocate(Integr)
 deallocate(nodes)
@@ -148,7 +159,7 @@ end module legendre
 
 
 program test
-use legendre, only : nodes_weights,Poly_in_cord,Ssource
+use legendre, only : nodes_sbr, weights_sbr ,Poly_in_cord,Ssource
 use, intrinsic        :: iso_fortran_env, only: dp=>real64
 implicit none 
 real(dp), allocatable :: nodes(:),weights(:),Func(:),Cord(:),Flux(:,:,:),Cross_sec_scat(:,:,:,:),SS(:,:,:)
@@ -168,7 +179,7 @@ do i = 1,ncord
 
 do j = 1,nenergy
 
-call nodes_weights (nangles,Func,weights)
+call nodes_sbr (nangles,Func)
 
 Flux(i,:,j) = Func(:)
 
