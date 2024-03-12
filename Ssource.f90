@@ -40,9 +40,9 @@ end function Legen
 !calculating nods and their weights
 
 
-subroutine nodes_sbr( n, nodes)
+subroutine nodes_and_weights( n, nodes, weights)
 integer,  intent(in   )              :: n
-real(dp), intent(  out), allocatable :: nodes(:)
+real(dp), intent(  out), allocatable :: nodes(:),weights(:)
 real(dp), allocatable                :: nodes1(:)
 real(dp)                             :: eps = 1e-12
 integer                              :: i 
@@ -66,21 +66,11 @@ end do
 
 
 
-
-
-end subroutine nodes_sbr
-
-
-subroutine weights_sbr( n, nodes, weights )
-integer,  intent(in   )              :: n
-real(dp), intent(inout), allocatable :: weights(:), nodes(:)
-integer                              :: i 
-
 allocate( weights( n ),source = [ ( 2_dp / ( 1_dp-nodes( i ) ** 2_dp ) / &
     ( ( ( Legen( n - 1, nodes( i ) ) - nodes( i ) * Legen( n, nodes( i ) ) ) * n / &
     ( 1_dp - nodes( i ) ** 2 ) ) **2 ), i = 1, n ) ] )
 
-end subroutine weights_sbr
+end subroutine nodes_and_weights
 
 
 subroutine Poly_in_cord(Func,cord)
@@ -123,8 +113,8 @@ res = 0
 
 allocate( Poly( order + 1 , SIZE(Flux,2) ) )
 
-call nodes_sbr(SIZE(Flux,2), nodes)
-call weights_sbr(SIZE(Flux,2), nodes, weights)
+
+call nodes_and_weights(SIZE(Flux,2), nodes, weights)
 
 call Poly_in_cord( Poly, nodes )
 
@@ -139,7 +129,7 @@ do k = 1,SIZE(Flux,3)
 
 Integr(i,j,k) = Integral(Poly(j,:) * Flux(i, :, k ), weights)
 
-res(i,:,k) = res(i,:,k) +  Poly(j,:) * Cross_sec_scat(i,k,energy,j) * ( 2 * ( i - 1 ) + 1) / 2 * Integr(i,j,k)
+res(i,:,k) = res(i,:,k) +  Poly(j,:) * Cross_sec_scat(i,k,energy,j) * ( 2_dp * ( i - 1_dp ) + 1_dp) / 2_dp * Integr(i,j,k)
 
 end do
 
@@ -159,10 +149,10 @@ end module legendre
 
 
 program test
-use legendre, only : nodes_sbr, weights_sbr ,Poly_in_cord,Ssource
+use legendre, only : nodes_and_weights, Poly_in_cord,Ssource
 use, intrinsic        :: iso_fortran_env, only: dp=>real64
 implicit none 
-real(dp), allocatable :: nodes(:),weights(:),Func(:),Cord(:),Flux(:,:,:),Cross_sec_scat(:,:,:,:),SS(:,:,:)
+real(dp), allocatable :: nodes(:),weights(:),Cord(:),Flux(:,:,:),Cross_sec_scat(:,:,:,:),SS(:,:,:)
 integer               :: order,ncord,nenergy,nangles, i, j,energy
 
 
@@ -175,17 +165,7 @@ allocate(Flux(ncord, nangles, nenergy))
 allocate(Cross_sec_scat(ncord,nenergy,nenergy,order + 1))
 Cross_sec_scat = 1
 Flux = 1
-do i = 1,ncord
 
-do j = 1,nenergy
-
-call nodes_sbr (nangles,Func)
-
-Flux(i,:,j) = Func(:)
-
-end do
-
-end do
 
 call Ssource(Flux,Cross_sec_scat,order,energy,SS)
 
