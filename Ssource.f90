@@ -1,9 +1,8 @@
 module legendre
 use, intrinsic :: iso_fortran_env, only: dp=>real64
 implicit none
-    contains
+contains
 
-! calculating polynomial 
 
 real(dp) function Legen(n,x) result(c)
 real(dp), intent(in   )     :: x
@@ -37,7 +36,7 @@ end if
 end function Legen
 
 
-!calculating nods and their weights
+
 
 
 subroutine nodes_and_weights( n, nodes, weights)
@@ -51,8 +50,8 @@ real(dp), parameter                  :: PI = ACOS( -1.D0 )
 !first approximation
 
 nodes = [ ( -cos( PI * ( 4.0_dp * i - 1.0_dp ) / ( 4.0_dp * n + 2.0_dp ) ), i = 1, n ) ]
-allocate( nodes1( n ) )
-nodes1 = 10
+allocate( nodes1( n ), source = 10.0_dp )
+
 
 ! cycle with Newton method for nods
 
@@ -68,7 +67,6 @@ nodes( i ) = nodes1( i ) - Legen( n,nodes1( i ) ) * ( 1.0_dp - nodes1( i ) ** 2.
 end do
 
 end do
-
 
 
 allocate( weights( n ),source = [ ( 2_dp / ( 1_dp-nodes( i ) ** 2_dp ) / &
@@ -109,13 +107,12 @@ subroutine Ssource(Flux,Cross_sec_scat,order,energy,res)
 real(dp),              intent(in   ) :: Flux(:,:,:), Cross_sec_scat(:,:,:,:)
 real(dp), allocatable                :: Poly(:,:), nodes(:), weights(:), Integr(:,:,:)
 real(dp), allocatable, intent(inout) :: res(:,:,:)
-integer, intent(in   )               :: order, energy
+integer,               intent(in   ) :: order, energy
 integer                              :: i, j, k 
 !Flux(ncord, nangles, nenergy)
 !Cross_sec_scat(ncord,nenergy (out),nenergy (in),order)
 
-allocate( res (SIZE(Flux,1),SIZE(Flux,2),SIZE(Flux,3)))
-res = 0
+allocate( res (SIZE(Flux,1),SIZE(Flux,2),SIZE(Flux,3)), source = 0.0)
 
 allocate( Poly( order + 1 , SIZE(Flux,2) ) )
 
@@ -133,7 +130,7 @@ do k = 1,SIZE(Flux,3)
 
 Integr(i,j,k) = Integral(Poly(j,:) * Flux(i, :, k ), weights)
 
-res(i,:,k) = res(i,:,k) +  Poly(j,:) * Cross_sec_scat(i,k,energy,j) * ( 2_dp * ( i - 1_dp ) + 1_dp) / 2_dp * Integr(i,j,k)
+res(i,:,k) = res(i,:,k) +  Poly(j,:) * Cross_sec_scat(i,k,energy,j) * ( 2_dp * ( j - 1_dp ) + 1_dp) / 2_dp * Integr(i,j,k)
 
 end do
 
@@ -148,18 +145,89 @@ end module legendre
 
 
 program test
-use legendre, only : Ssource
+use legendre, only : Ssource, nodes_and_weights, Poly_in_cord
 use, intrinsic        :: iso_fortran_env, only: dp=>real64
 implicit none 
-real(dp), allocatable :: nodes(:),weights(:),Cord(:),Flux(:,:,:),Cross_sec_scat(:,:,:,:),SS(:,:,:)
-integer               :: order,ncord,nenergy,nangles, i, j,energy
+real(dp), allocatable :: nodes(:),weights(:),Flux(:,:,:),Cross_sec_scat(:,:,:,:),SS(:,:,:),Poly(:,:),SS_an(:,:,:)
+real(dp)              :: integr_analytic(6)
+integer               :: order,ncord,nenergy,nangles, i, j, k,energy
 
-order = 4
+order = 5
 ncord = 3
 nenergy = 5
-energy = 2
+energy = 1
 nangles = 5
+
+call nodes_and_weights(nangles,nodes,weights)
+
+allocate(Flux(ncord, nangles, nenergy))
+
+do i = 1,SIZE(Flux,1)
+
+do k = 1,SIZE(Flux,3)
+
+Flux(i,:,k) = cos(nodes)
+
+end do
+
+end do
+
+
+
+allocate(Cross_sec_scat(ncord,nenergy,nenergy,order + 1),source = 1.0_dp)
+
+
+
+integr_analytic(1)=2_dp*sin(1.0_dp)
+integr_analytic(2)=0_dp
+integr_analytic(3)=6_dp*cos(1.0_dp)-4_dp*sin(1.0_dp)
+integr_analytic(4)=0_dp
+integr_analytic(5)=122_dp*sin(1.0_dp)-190_dp*cos(1.0_dp)
+integr_analytic(6)=0_dp
+
+
+allocate(Poly(order +1,nangles))
+
+call Poly_in_cord(Poly,nodes)
 
 call Ssource(Flux,Cross_sec_scat,order,energy,SS)
 
+allocate(SS_an(ncord,nangles,nenergy))
+
+do i = 1,SIZE(Flux,1)
+
+do j = 1,order + 1
+
+do k = 1,SIZE(Flux,3)
+
+
+SS_an(i,:,k) = SS_an(i,:,k) + Poly(j,:) * Cross_sec_scat(i,k,energy,j) * ( 2_dp * ( j - 1_dp ) + 1_dp) / 2_dp * integr_analytic(j)
+
+end do
+
+end do
+
+end do
+
+do i = 1,SIZE(Flux,1)
+
+do j = 1,SIZE(Flux,2)
+
+do k = 1,SIZE(Flux,3)
+    
+write(*,*) SS_an(i,j,k)
+
+end do
+
+end do
+
+end do
+
+deallocate(Flux)
+deallocate(Cross_sec_scat)
+deallocate(SS_an)
+deallocate(nodes)
+deallocate(Poly)
+deallocate(SS)
+deallocate(weights)
 end program test
