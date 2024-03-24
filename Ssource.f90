@@ -32,13 +32,9 @@ b = c
 
 end do
 
-
 end if
 
 end function Legen
-
-
-
 
 
 subroutine nodes_and_weights( n, nodes, weights)
@@ -52,12 +48,13 @@ real(dp), parameter                  :: PI = ACOS( -1.D0 )
 !first approximation
 
 nodes = [ ( -cos( PI * ( 4.0_dp * i - 1.0_dp ) / ( 4.0_dp * n + 2.0_dp ) ), i = 1, n ) ]
+
 allocate( nodes1( n ), source = 10.0_dp )
 
 
 ! cycle with Newton method for nods
 
-do while ( abs(maxval( nodes - nodes1 ) ) >= eps)
+do while ( abs( maxval( nodes - nodes1 ) ) >= eps )
 
 nodes1 = nodes
 
@@ -114,22 +111,22 @@ integer                              :: i, j, k
 !Flux(ncord, nangles, nenergy)
 !Cross_sec_scat(ncord,nenergy (out),nenergy (in),order)
 
-allocate( res( SIZE(Flux, 1), SIZE(Flux, 2), SIZE(Flux, 3) ) )
+allocate( res( SIZE( Flux, 1), SIZE( Flux, 2), SIZE( Flux, 3) ) )
 res = 0
 
-allocate( Poly( order + 1 , SIZE(Flux, 2) ) )
+allocate( Poly( order + 1 , SIZE( Flux, 2) ) )
 
-call nodes_and_weights( SIZE(Flux, 2), nodes, weights)
+call nodes_and_weights( SIZE( Flux, 2), nodes, weights)
 
 call Poly_in_cord( Poly, nodes )
 
-allocate( Integr( SIZE(Flux, 1), order + 1, SIZE(Flux, 3)) )
+allocate( Integr( SIZE( Flux, 1), order + 1, SIZE( Flux, 3)) )
 
-do i = 1, SIZE(Flux, 1)
+do i = 1, SIZE( Flux, 1)
 
 do j = 1, order + 1
 
-do k = 1, SIZE(Flux, 3)
+do k = 1, SIZE( Flux, 3)
 
 Integr(i,j,k) = Integral( Poly(j,:) * Flux(i, :, k ), weights)
 
@@ -165,19 +162,19 @@ call nodes_and_weights(nangles,nodes,weights)
 
 allocate(Flux(ncord, nangles, nenergy))
 
-do i = 1,SIZE(Flux,1)
+do i = 1, SIZE( Flux, 1)
 
-do k = 1,SIZE(Flux,3)
+do k = 1, SIZE( Flux, 3)
 
-Flux(i,:,k) = cos(nodes)
-
-end do
+Flux(i,:,k) = cos( nodes )
 
 end do
 
+end do
 
 
-allocate(Cross_sec_scat(ncord,nenergy,nenergy,order + 1),source = 1.0_dp)
+
+allocate( Cross_sec_scat(ncord, nenergy, nenergy, order + 1), source = 1.0_dp )
 
 
 
@@ -195,13 +192,13 @@ call Poly_in_cord( Poly, nodes)
 
 call Ssource( Flux, Cross_sec_scat, order, energy, SS)
 
-allocate( SS_an(ncord, nangles, nenergy ), source = 0.0_dp)
+allocate( SS_an( ncord, nangles, nenergy ), source = 0.0_dp)
 
-do i = 1, SIZE(Flux, 1)
+do i = 1, SIZE( Flux, 1)
 
 do j = 1, order + 1
 
-do k = 1, SIZE(Flux, 3)
+do k = 1, SIZE( Flux, 3)
 
 
 SS_an(i,:,k) = SS_an(i,:,k) + Poly(j,:) * Cross_sec_scat(i, k, energy, j) * ( 2_dp * ( j - 1_dp ) + 1_dp) / 2_dp * integr_analytic(j)
