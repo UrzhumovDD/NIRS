@@ -101,8 +101,7 @@ implicit none
     contains
 !
 real(dp) function Integral( Func, weights)
-real(dp),intent(in   ) :: weights(:)
-real(dp),intent(in   ) :: Func(:)
+real(dp),intent(in   ) :: weights(:),Func(:)
 !
 Integral = SUM( weights * Func )
 !
