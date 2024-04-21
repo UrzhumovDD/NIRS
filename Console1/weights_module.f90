@@ -20,8 +20,8 @@ module Calc_of_weights
         !weights of the Gauss-Legendre quadrature
         !the derivative of the polynomial calculated by the recurrent formula
         allocate( weights(n), source = [ ( 2_dp / ( 1_dp - nodes(i) ** 2_dp ) / &
-            ( ( ( Pn(n - 1, nodes(i)) - nodes(i) * Pn(n, nodes(i)) ) * n / &
-            ( 1_dp - nodes(i) ** 2 ) ) **2 ), i = 1, n) ] )
+            ( ( ( Pn(n - 1, nodes(i)) - nodes(i) * Pn(n, nodes(i)) ) * real(n, dp) / &
+            ( 1_dp - nodes(i) ** 2 ) ) ** 2 ), i = 1, n) ] )
             
     end subroutine C_o_w
     

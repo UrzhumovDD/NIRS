@@ -34,7 +34,7 @@ module Scaterring_source
         do j = 1, order + 1
             do k = 1, SIZE(Flux, 3)
                 Integr(i,j,k) = Integral( Poly(j,:) * Flux(i, :, k ), weights)
-                res(i,:,k) = res(i,:,k) +  Poly(j,:) * Cross_sec_scat(i, k, energy, j) * ( 2_dp * ( j - 1_dp ) + 1_dp) / 2_dp * Integr(i,j,k)
+                res(i,:,k) = res(i,:,k) +  Poly(j,:) * Cross_sec_scat(i, k, energy, j) * real( 2 * ( j - 1 ) + 1, dp) / 2_dp * Integr(i,j,k)
             end do
         end do
     end do
@@ -56,21 +56,19 @@ program test
     real(dp)              :: integr_analytic(6)
     integer               :: order,ncord,nenergy,nangles, i, j, k,energy
     
+    !values for variables used to check module
     order = 5
     ncord = 3
     nenergy = 5
     energy = 1
     nangles = 5
-    
     call C_o_n(nangles,nodes)
     allocate(Flux(ncord, nangles, nenergy))
-    !
     do i = 1,SIZE(Flux,1)
         do k = 1,SIZE(Flux,3)
             Flux(i,:,k) = COS(nodes)
         end do
     end do
-    !
     allocate(Cross_sec_scat(ncord,nenergy,nenergy,order + 1),source = 1.0_dp)
     !analyticaly calculated integral of Pn*cos(mu)
     integr_analytic(1) = 2_dp * SIN(1.0_dp)
@@ -79,12 +77,10 @@ program test
     integr_analytic(4) = 0_dp
     integr_analytic(5) = 122_dp * SIN(1.0_dp) - 190_dp * COS(1.0_dp)
     integr_analytic(6) = 0_dp
-    !
     allocate( Poly(order + 1, nangles) )
     call All_poly( Poly, nodes)
     call Ssource( Flux, Cross_sec_scat, order, energy, SS)
     allocate( SS_an(ncord, nangles, nenergy ), source = 0.0_dp)
-    !
     do i = 1, SIZE(Flux, 1)
         do j = 1, order + 1
            do k = 1, SIZE(Flux, 3)
@@ -96,7 +92,6 @@ program test
     write(*,*) MAXVAL(ABS( SS_an - SS ) )
     !relative difference
     write(*,*) MAXVAL(ABS( (SS_an - SS) / SS ) )
-    !
     deallocate(Flux)
     deallocate(Cross_sec_scat)
     deallocate(SS_an)
