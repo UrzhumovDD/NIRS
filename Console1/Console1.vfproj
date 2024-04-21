@@ -54,6 +54,7 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath=".\fission_source_module.f90"/>
 		<File RelativePath=".\scaterring_source_module.f90"/>
 		<File RelativePath=".\integration_module.f90"/>
 		<File RelativePath=".\Legendre_module.f90"/>
