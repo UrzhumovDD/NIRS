@@ -12,11 +12,11 @@ module Fission_source
     contains
     
     subroutine Fsource(Flux, Nuf, cross_sec_fis, Hi, Keff, res )
-    real(dp),              intent(in   ) :: Flux(:,:,:), Nuf(:,:), cross_sec_fis(:,:), Hi(:)
-    real(dp), allocatable, intent(inout) :: res(:,:)
+    real(dp),              intent(in   ) :: Flux(:,:,:), Nuf(:,:), cross_sec_fis(:,:), Hi(:)    ! Hi is a fission cpectrum, Nuf is a the average number of neutrons per act of fission 
+    real(dp), allocatable, intent(inout) :: res(:,:)                                            ! final value
     real(dp), allocatable                :: nodes(:), weights(:), Integr(:,:)
     real(dp)                             :: Keff
-    integer                              :: i, j
+    integer                              :: i, j                                                ! loop counters
     
     call C_o_n( SIZE(Flux, 2), nodes)
     call C_o_w( nodes, weights)
@@ -25,7 +25,7 @@ module Fission_source
     ! integration and dividing by 2
     do i = 1, SIZE(Flux, 1)
         do j = 1, SIZE(Flux, 3)
-            Integr(i,j) = Integral( Flux( i,:, j ) , weights) * 0.5_dp
+            Integr(i,j) = Integral( Flux( i,:, j ) , weights) / 2_dp
         end do
     end do
     do i = 1, SIZE(Flux, 1)
@@ -37,7 +37,7 @@ module Fission_source
     end subroutine Fsource
     
 end module Fission_source
-!
+    
 program FS
 
     use Fission_source, only : Fsource
@@ -62,4 +62,5 @@ program FS
     deallocate(Nuf)
     deallocate(cross_sec_fis)
     deallocate(Hi)
+    
 end program FS
