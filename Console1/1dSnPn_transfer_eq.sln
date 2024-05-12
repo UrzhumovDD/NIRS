@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "Console1", "Console1.vfproj", "{53AAA68A-1718-401A-A4B8-83F046F2BE31}"
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "1dSnPn_transfer_eq", "1dSnPn_transfer_eq.vfproj", "{53AAA68A-1718-401A-A4B8-83F046F2BE31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
