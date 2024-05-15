@@ -59,7 +59,6 @@
 		<File RelativePath=".\Legendre_m.f90"/>
 		<File RelativePath=".\quadratures_m.f90"/>
 		<File RelativePath=".\scaterring_source_m.f90"/></Filter>
-		<File RelativePath=".\ReadMe.txt"/>
 	</Files>
 	<Globals/>
 </VisualStudioProject>
