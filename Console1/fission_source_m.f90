@@ -1,7 +1,8 @@
 module Fission_source
     
-    use Integration_with_weights, only: Integral
-    use quadratures,              only: nodes_values, weights_values
+    use Integration_with_weights,      only: Integral
+    use quadratures,                   only: weights_values
+    use Legendre,                      only: nodes_values
     use, intrinsic :: iso_fortran_env, only: dp=>real64
     
     implicit none

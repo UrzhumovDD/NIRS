@@ -49,7 +49,7 @@ program test
     use Space, only             : Space_distrib
     use Scaterring_source, only : Ssource
     use Fission_source, only    : Fsource
-    use Quadratures, only       : nodes_values
+    use Legendre, only       : nodes_values
     
     use, intrinsic      :: iso_fortran_env, only: dp=>real64
     
@@ -57,7 +57,7 @@ program test
     
     real(dp), allocatable :: nodes(:), Flux(:,:,:), Flux_s(:,:,:), Cross_sec_scat(:,:,:,:), SS(:,:,:), Poly(:,:), FS(:,:), Nuf(:,:), Cross_sec_fis(:,:), Hi(:),Cross_sec_tot(:,:,:)
     integer               :: ncord, nenergy, nangles
-    real(dp)              :: h = 1e-4_dp, gamma = 6.02_dp / 235 * 19.05_dp*10
+    real(dp)              :: h = 1e-4_dp, gamma = 6.02_dp / 235 * 19.05_dp * 10 ! h - step of space grid, gamma - nuclear density in 10**-24 cm**-3
     real(dp), parameter   :: eps = 1e-12_dp
     integer, parameter    :: order = 5
     
@@ -77,6 +77,7 @@ program test
     allocate(Flux(ncord, nangles, nenergy), Source = 1.0_dp)
     allocate(Flux_s(ncord, nangles, nenergy), Source = 0.0_dp)
     call nodes_values(nangles, nodes)
+    
     do while ( MAXVAL( ABS(Flux-Flux_s) ) >= eps )
         Flux_s = Flux
         call Ssource( Flux, Cross_sec_scat, order, SS)
@@ -85,6 +86,7 @@ program test
         deallocate (SS)
         deallocate (FS)
     end do
+    
     write(*,*) 'thermal'
     write(*,*) SUM(Flux(:,:,1),2)
     write(*,*) 'fast'

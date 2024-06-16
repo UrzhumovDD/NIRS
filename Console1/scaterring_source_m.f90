@@ -1,7 +1,7 @@
 module Scaterring_source
     
-    use Quadratures,                   only : nodes_values, weights_values
-    use Legendre,                        only : All_poly
+    use quadratures,                     only : weights_values
+    use Legendre,                        only : All_poly, nodes_values
     use Integration_with_weights,        only : Integral
     use, intrinsic :: iso_fortran_env,   only : dp=>real64
     
@@ -46,10 +46,9 @@ module Scaterring_source
 
 !program test
 !
-!    use Scaterring_source, only : Ssource
-!    use Quadratures, only     : nodes_values
-!    use Legendre, only     : All_poly
-!    use, intrinsic        :: iso_fortran_env, only: dp=>real64
+!    use Scaterring_source,                    only : Ssource
+!    use Legendre,                             only : All_poly, nodes_values
+!    use, intrinsic        :: iso_fortran_env, only : dp=>real64
 !    
 !    implicit none
 !    
