@@ -58,8 +58,8 @@ program test
     real(dp), allocatable :: nodes(:), Flux(:,:,:), Flux_s(:,:,:), Cross_sec_scat(:,:,:,:), SS(:,:,:), Poly(:,:), FS(:,:), Nuf(:,:), Cross_sec_fis(:,:), Hi(:),Cross_sec_tot(:,:,:)
     integer               :: ncord, nenergy, nangles
     real(dp)              :: h = 1e-4_dp, gamma = 6.02_dp / 235 * 19.05_dp * 10 ! h - step of space grid, gamma - nuclear density in 10**-24 cm**-3
-    real(dp), parameter   :: eps = 1e-12_dp
-    integer, parameter    :: order = 5
+    real(dp), parameter   :: eps = 1e-12_dp                                     ! difference between iterations
+    integer, parameter    :: order = 5                                          ! order of Legendre polynomial
     
     ncord = 200
     nenergy = 2
@@ -87,6 +87,9 @@ program test
         deallocate (FS)
     end do
     
+    call Fsource( Flux, Nuf, Cross_sec_fis, Hi, FS )
+    write(*,*) 'K'
+    write(*,*) SUM(FS)
     write(*,*) 'thermal'
     write(*,*) SUM(Flux(:,:,1),2)
     write(*,*) 'fast'
