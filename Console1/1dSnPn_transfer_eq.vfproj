@@ -58,7 +58,8 @@
 		<File RelativePath=".\integration_m.f90"/>
 		<File RelativePath=".\Legendre_m.f90"/>
 		<File RelativePath=".\quadratures_m.f90"/>
-		<File RelativePath=".\scaterring_source_m.f90"/></Filter>
+		<File RelativePath=".\scaterring_source_m.f90"/>
+		<File RelativePath=".\space_distribution_m.f90"/></Filter>
 	</Files>
 	<Globals/>
 </VisualStudioProject>

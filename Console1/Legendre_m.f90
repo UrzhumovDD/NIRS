@@ -38,12 +38,12 @@ module legendre
     
     !calculating polynomials of all orders from 0 to SIZE(Poly, 1) - 1 in nodes
     subroutine All_poly(Poly)
-        use Quadratures,                   only : C_o_n
+        use Quadratures,                   only : nodes_values
         real(dp), intent(inout)     :: Poly(:,:)    ! values of legendre polynomials in nodes
         real(dp), allocatable       :: nodes(:)     ! values of nodes
         integer                     :: i,j          ! loop counters
         
-        call C_o_n( SIZE(Poly, 2), nodes)
+        call nodes_values( SIZE(Poly, 2), nodes)
         do i = 1,SIZE(Poly, 1) ! orders of polynomials
             do j = 1,SIZE(Poly, 2) 
                 Poly(i,j) = Pn(i - 1, nodes(j) )

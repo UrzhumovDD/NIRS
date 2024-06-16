@@ -6,11 +6,11 @@ module Quadratures
     implicit none
     
     private
-    public  :: C_o_n, C_o_w
+    public  :: nodes_values, weights_values
     
     contains
     
-    subroutine C_o_n( n, nodes)
+    subroutine nodes_values( n, nodes)
     
         integer,  intent(in   )              :: n                   !number of nodes
         real(dp), intent(  out), allocatable :: nodes(:)            !values of nodes
@@ -24,7 +24,7 @@ module Quadratures
         !first value for auxiliary massive is 10 which is greater then any value of first approximation modulo
         allocate( nodes1( n ), source = 10.0_dp )
         !loop with iterative Newton method for nodes
-        do while ( ABS(MAXVAL( nodes - nodes1 ) ) >= eps)
+        do while ( MAXVAL(ABS( nodes - nodes1 ) ) >= eps)
             nodes1 = nodes
             do i = 1 ,n        
                 nodes(i) = nodes1(i) - Pn(n, nodes1(i) ) * ( 1.0_dp - nodes1(i) ** 2.0_dp ) / &
@@ -32,9 +32,9 @@ module Quadratures
             end do
         end do
         
-    end subroutine C_o_n
+    end subroutine nodes_values
     
-        subroutine C_o_w(nodes,weights)
+    subroutine weights_values(nodes,weights)
     
         real(dp), intent(  out), allocatable    :: weights(:) !values of weights
         real(dp), intent(in   )                 :: nodes(:)   !values of nodes
@@ -47,6 +47,6 @@ module Quadratures
             ( ( ( Pn(n - 1, nodes(i)) - nodes(i) * Pn(n, nodes(i)) ) * real(n, dp) / &
             ( 1_dp - nodes(i) ** 2 ) ) ** 2 ), i = 1, n) ] )
             
-    end subroutine C_o_w
+    end subroutine weights_values
         
 end module Quadratures
